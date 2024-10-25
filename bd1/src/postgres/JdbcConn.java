@@ -6,7 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class JdbcConn implements AutoCloseable {
+public class JdbcConn {
 	private Connection connection;
 	private String host;
 	private String user;
@@ -46,19 +46,36 @@ public class JdbcConn implements AutoCloseable {
     
     /*Lista todas as tabelas existentes na base de dados
      */
-    public ResultSet listAllTables() throws SQLException {
-    	String sql="SELECT * FROM informatio_schema.tables";
+    public void listAllTables(String schema) throws SQLException {
+    	String sql="SELECT table_name FROM information_schema.tables WHERE table_schema='"+schema+"' AND table_type='BASE TABLE'";
     	try (Statement stm = createStatement()) {
-        	return stm.executeQuery(sql);
+    		ResultSet rs = stm.executeQuery(sql);
+    		System.out.println("TABELAS DO SCHEMA "+schema.toUpperCase());
+    		list(rs);
+		}catch (SQLException e) {
+    		e.printStackTrace();
     	}
     }
     
+    public void list(ResultSet rs) {
+    	int i=1;
+    	try{
+    		while (rs.next()) {
+    		System.out.println(i+" - "+rs.getString(1));
+            i++;
+    		}
+    	}catch (SQLException e) {
+    			e.printStackTrace();
+    		}
+        }
     /*Lista os campos de um schema e tabela especificados
      */
-    public ResultSet listFieldsFromTable(String schema, String table) throws SQLException{
-    	String sql="SELECT * FROM informatio_schema.columns WHERE table_schema ='"+schema+"' AND table_name = '"+table+"'";
+    public void listFieldsFromTable(String schema, String table) throws SQLException{
+    	String sql="SELECT column_name FROM information_schema.columns WHERE table_name='"+table+"'";
     	try (Statement stm = createStatement()){
-    		return stm.executeQuery(sql);
+    	ResultSet rs = stm.executeQuery(sql);
+    	System.out.println("\nTABELA: "+table.toUpperCase());
+    	list(rs);
     	}
     }
     
